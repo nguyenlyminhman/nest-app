@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nest-app 
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: nest-app
+  template:
+    metadata:
+      labels:
+        app: nest-app
+    spec:
+      containers:
+        - name: nest-app
+          image: nguyenlyminhman/nestjs-app:1.0.1
+          ports:
+            - containerPort: 3001
+
+
+# kubectl rollout history  deployment/nest-app
+# kubectl rollout undo deployment/nest-app
+# kubectl get pods
+# kubectl describe pod <pod-name>
+# kubectl logs <pod-name>
+# kubectl exec -it <pod-name> -- /bin/sh
+# kubectl get deployment nest-app
