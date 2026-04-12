@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nest-app
+spec:
+  containers:
+    - name: nest-app
+      image: nguyenlyminhman/nestjs-app:1.0.0
+      ports:
+        - containerPort: 3001
