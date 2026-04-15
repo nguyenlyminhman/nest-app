@@ -1,99 +1,228 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 Nest App – Docker Build & Push for Kubernetes Learning
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project demonstrates how to:
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- 🐳 Build a Docker image from a NestJS application  
+- ⚙️ Automate build & push using GitHub Actions  
+- 📦 Publish image to Docker Hub (public)  
+- ☸️ Use the image for Kubernetes deployment  
 
-## Description
+👉 This repository is designed for **learning Kubernetes end-to-end** (from code → image → deploy)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 📌 Overview
+```
+Pipeline flow:
 
-```bash
-$ npm install
+Code (NestJS)
+   ↓
+GitHub Actions (CI)
+   ↓
+Build Docker Image
+   ↓
+Push → Docker Hub (public)
+   ↓
+Pull → Kubernetes Cluster
+
 ```
 
-## Compile and run the project
+## 🧱 Tech Stack
 
-```bash
-# development
-$ npm run start
+- **Backend**: NestJS (Node.js)
+- **CI/CD**: GitHub Actions
+- **Containerization**: Docker
+- **Registry**: Docker Hub
+- **Orchestration**: Kubernetes (external)
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
+## 📂 Project Structure
+```
+nest-app/
+├── .github/
+│   └── workflows/
+│       └── docker.yml      # CI build & push image
+├── src/
+├── Dockerfile
+├── package.json
+└── README.md
 ```
 
-## Run tests
+## ⚙️ CI/CD Workflow
 
-```bash
-# unit tests
-$ npm run test
+Main file:
 
-# e2e tests
-$ npm run test:e2e
+.github/workflows/docker.yml
 
-# test coverage
-$ npm run test:cov
+### 🔄 Flow
+
+1. Trigger:
+   - push to `main`
+   - pull request
+
+2. Pipeline steps:
+
+- Checkout source
+- Setup Docker Buildx
+- Login Docker Hub
+- Build image from Dockerfile
+- Push image to Docker Hub
+
+---
+
+## 📌 Example Workflow
+
+```yaml
+name: Build & Push Docker Image
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & Push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: <your-dockerhub-username>/nest-app:latest
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🔐 Secrets Configuration
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Go to:
+
+Settings → Secrets → Actions
+
+Add:
+
+- DOCKER_USERNAME
+- DOCKER_PASSWORD (use Docker Hub Access Token)
+
+---
+
+## 🐳 Docker Usage
+
+### Build locally
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+docker build -t nest-app .
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Run container
 
-## Resources
+```bash
+docker run -p 3001:3001 nest-app
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### Pull from Docker Hub
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+docker pull <your-username>/nest-app:latest
+```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## ☸️ Kubernetes Usage
 
-## Stay in touch
+After pushing image to Docker Hub:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Deployment example
 
-## License
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nest-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nest-app
+  template:
+    metadata:
+      labels:
+        app: nest-app
+    spec:
+      containers:
+        - name: nest-app
+          image: <your-username>/nest-app:latest
+          ports:
+            - containerPort: 3001
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+## 🎯 Purpose
+
+This is NOT a production-ready app.
+
+Main goals:
+
+- Learn CI/CD pipeline
+- Understand Docker image lifecycle
+- Practice Kubernetes deployment
+- Use as a base for microservices
+
+---
+
+## 📈 Suggested Learning Path
+
+1. Dockerize app
+2. Push to Docker Hub
+3. Deploy to:
+   - Minikube
+   - Kind
+   - K3s
+4. Scale & rolling update
+5. Add Ingress / Service
+
+---
+
+## 🔥 Best Practices
+
+- Use version tags (v1, v2, commit SHA)
+- Avoid using only `latest`
+- Cache Docker layers
+- Scan images for vulnerabilities
+
+---
+
+## 🚀 Future Improvements
+
+- [ ] Multi-stage Dockerfile
+- [ ] Version tagging (git SHA)
+- [ ] Helm chart
+- [ ] GitOps (ArgoCD)
+- [ ] Healthcheck & readinessProbe
+
+---
+
+## 🤝 Contributing
+
+Feel free to fork and use for your Kubernetes learning journey.
+
+---
+
+## 📄 License
+
+MIT
